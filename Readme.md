@@ -1889,5 +1889,1001 @@ When generating **method bodies**, JavaPoet doesn't build a detailed syntax tree
 * Use `beginControlFlow()` and `endControlFlow()` for blocks like `for`, `if`, `while`, and `try`.
 * Use `nextControlFlow()` when one block naturally continues into another, such as `else`, `else if`, or `catch`.
 
-This makes the generated code cleaner, easier to read, and saves you from manually writing braces, semicolons, newlines, and indentation. Once you understand these four methods, you'll be able to generate most method bodies with JavaPoet.
+---
 
+
+# JavaPoet Placeholders (`$L`, `$S`, `$T`, `$N`) - Complete Notes
+
+> **This is one of the most important topics in JavaPoet.**
+>
+> Almost every JavaPoet program uses these four placeholders:
+>
+> * `$L` → Literal
+> * `$S` → String
+> * `$T` → Type
+> * `$N` → Name
+
+---
+
+# Why do we need Placeholders?
+
+When I first saw JavaPoet, I had one question:
+
+> **Java already has `%s` in `String.format()`. Why did JavaPoet create `$L`, `$S`, `$T`, `$N`?**
+
+The answer is simple.
+
+`String.format()` is used to **format text**.
+
+JavaPoet is used to **generate Java source code**.
+
+These are two completely different things.
+
+---
+
+## Example using `%s`
+
+```java
+String code = String.format(
+    "System.out.println(%s)",
+    "Hello"
+);
+
+System.out.println(code);
+```
+
+Output
+
+```java
+System.out.println(Hello)
+```
+
+This is **wrong Java code**.
+
+Why?
+
+Because Java strings require quotation marks.
+
+Correct Java code should be
+
+```java
+System.out.println("Hello");
+```
+
+Now look at JavaPoet.
+
+```java
+.addStatement(
+    "System.out.println($S)",
+    "Hello"
+)
+```
+
+Generated code
+
+```java
+System.out.println("Hello");
+```
+
+JavaPoet automatically added the quotation marks.
+
+That is why JavaPoet doesn't simply use `%s`.
+
+It understands Java syntax.
+
+---
+
+# Difference Between `String.format()` and JavaPoet
+
+| String.format()                 | JavaPoet                                  |
+| ------------------------------- | ----------------------------------------- |
+| Formats text                    | Generates Java source code                |
+| Doesn't understand Java         | Understands Java syntax                   |
+| Doesn't add imports             | Automatically generates imports           |
+| Doesn't know classes or methods | Knows Java classes, methods, fields, etc. |
+
+---
+
+# Think of Placeholders Like Empty Spaces
+
+Imagine writing
+
+```
+Hello ________
+```
+
+If I fill the blank with
+
+```
+Noman
+```
+
+Output
+
+```
+Hello Noman
+```
+
+JavaPoet placeholders work exactly the same way.
+
+Instead of writing Java code manually,
+
+you leave blanks
+
+and JavaPoet fills them correctly.
+
+---
+
+# 1. `$L` → Literal
+
+## Meaning
+
+**Literal means:**
+
+> Put the value exactly as it is.
+
+JavaPoet does not modify it.
+
+It simply copies it into the generated code.
+
+---
+
+## Example 1
+
+```java
+.addStatement(
+    "int age = $L",
+    22
+)
+```
+
+Generated
+
+```java
+int age = 22;
+```
+
+Notice
+
+JavaPoet copied
+
+```
+22
+```
+
+exactly.
+
+---
+
+## Example 2
+
+```java
+.addStatement(
+    "double pi = $L",
+    3.14
+)
+```
+
+Generated
+
+```java
+double pi = 3.14;
+```
+
+---
+
+## Example 3
+
+```java
+.addStatement(
+    "boolean passed = $L",
+    true
+)
+```
+
+Generated
+
+```java
+boolean passed = true;
+```
+
+---
+
+## Example 4
+
+Suppose
+
+```java
+String operation="*";
+```
+
+JavaPoet
+
+```java
+.addStatement(
+    "result = result $L i",
+    operation
+)
+```
+
+Generated
+
+```java
+result = result * i;
+```
+
+Notice
+
+It copied
+
+```
+*
+```
+
+without quotation marks.
+
+---
+
+## Real-Life Analogy
+
+Imagine a form.
+
+```
+Age : ______
+```
+
+Fill
+
+```
+22
+```
+
+Result
+
+```
+Age : 22
+```
+
+Nothing extra is added.
+
+That is exactly what `$L` does.
+
+---
+
+# When should we use `$L`?
+
+Use `$L` whenever you want JavaPoet to insert a value directly into the generated code.
+
+Examples
+
+* int
+* long
+* float
+* double
+* boolean
+* operators (`+`, `-`, `*`, `/`)
+* Java expressions
+* numeric values
+
+---
+
+# 2. `$S` → String
+
+## Meaning
+
+`$S` means
+
+> This is a Java String.
+
+JavaPoet automatically
+
+* adds quotation marks
+* escapes special characters if necessary
+
+---
+
+## Example
+
+```java
+.addStatement(
+    "return $S",
+    "Hello"
+)
+```
+
+Generated
+
+```java
+return "Hello";
+```
+
+Notice
+
+You didn't write
+
+```
+"Hello"
+```
+
+JavaPoet added the quotation marks automatically.
+
+---
+
+## Another Example
+
+```java
+String student="Noman";
+
+.addStatement(
+    "System.out.println($S)",
+    student
+)
+```
+
+Generated
+
+```java
+System.out.println("Noman");
+```
+
+---
+
+# Difference between `$L` and `$S`
+
+Suppose
+
+```
+Hello
+```
+
+Using `$L`
+
+```java
+.addStatement("$L","Hello")
+```
+
+Generated
+
+```java
+Hello
+```
+
+No quotation marks.
+
+---
+
+Using `$S`
+
+```java
+.addStatement("$S","Hello")
+```
+
+Generated
+
+```java
+"Hello"
+```
+
+Quotation marks added automatically.
+
+---
+
+# Memory Trick
+
+```
+L
+
+↓
+
+Literal
+
+↓
+
+Copy exactly
+```
+
+```
+S
+
+↓
+
+String
+
+↓
+
+Add quotation marks
+```
+
+---
+
+# 3. `$T` → Type
+
+This is probably the most powerful placeholder in JavaPoet.
+
+## Meaning
+
+`$T` means
+
+> Insert a Java Class (Type).
+
+JavaPoet also generates the necessary import statement automatically.
+
+---
+
+## Example
+
+```java
+MethodSpec method = MethodSpec.methodBuilder("today")
+    .returns(Date.class)
+    .addStatement("return new $T()", Date.class)
+    .build();
+```
+
+Generated code
+
+```java
+import java.util.Date;
+
+Date today() {
+    return new Date();
+}
+```
+
+Notice
+
+You never wrote
+
+```java
+import java.util.Date;
+```
+
+JavaPoet generated it automatically.
+
+---
+
+## Another Example
+
+```java
+.addStatement(
+    "$T list = new $T()",
+    ArrayList.class,
+    ArrayList.class
+)
+```
+
+Generated
+
+```java
+import java.util.ArrayList;
+
+ArrayList list = new ArrayList();
+```
+
+---
+
+# Why is `$T` useful?
+
+Imagine your project has
+
+```
+100 Java files
+```
+
+Suppose
+
+```
+Date
+```
+
+changes to another class.
+
+Normally
+
+You must manually update imports.
+
+With JavaPoet
+
+Just change
+
+```java
+Date.class
+```
+
+Everything updates automatically.
+
+---
+
+# ClassName
+
+GitHub shows
+
+```java
+ClassName hoverboard =
+ClassName.get(
+    "com.mattel",
+    "Hoverboard"
+);
+```
+
+This confuses many beginners.
+
+Suppose
+
+```
+Hoverboard.java
+```
+
+doesn't exist yet.
+
+Can JavaPoet still generate code?
+
+Yes.
+
+Because
+
+`ClassName`
+
+stores
+
+* package
+* class name
+
+Only.
+
+Think of it as storing the address of a future class.
+
+Even if the class does not exist yet,
+
+JavaPoet can still generate
+
+```java
+import com.mattel.Hoverboard;
+```
+
+---
+
+# ParameterizedTypeName
+
+Java Generics
+
+```
+List<String>
+
+List<Student>
+
+List<Integer>
+```
+
+In JavaPoet
+
+Generic types are created using
+
+```java
+ParameterizedTypeName
+```
+
+Example
+
+```java
+TypeName list =
+ParameterizedTypeName.get(
+    List.class,
+    String.class
+);
+```
+
+Generated
+
+```java
+List<String>
+```
+
+---
+
+# 4. `$N` → Name
+
+This placeholder is unique.
+
+It means
+
+> Use the name of another generated declaration.
+
+---
+
+Suppose we generated
+
+```java
+calculate()
+```
+
+Another generated method wants to call it.
+
+Without `$N`
+
+```java
+.addStatement(
+    "calculate()"
+)
+```
+
+If tomorrow
+
+you rename
+
+```
+calculate()
+```
+
+to
+
+```
+calculateMarks()
+```
+
+You must update every reference manually.
+
+---
+
+Using `$N`
+
+```java
+.addStatement(
+    "$N()",
+    calculateMethod
+)
+```
+
+JavaPoet automatically extracts
+
+```
+calculate
+```
+
+from the MethodSpec.
+
+Generated
+
+```java
+calculate();
+```
+
+If the method name changes,
+
+every generated reference also changes automatically.
+
+---
+
+# GitHub Example
+
+JavaPoet generates
+
+```java
+char hexDigit(int i){
+
+}
+```
+
+Another generated method
+
+```java
+byteToHex()
+```
+
+calls
+
+```java
+hexDigit()
+```
+
+Instead of writing
+
+```java
+hexDigit(...)
+```
+
+manually,
+
+JavaPoet writes
+
+```java
+$N
+```
+
+and passes the `MethodSpec` object.
+
+JavaPoet reads its name
+
+```
+hexDigit
+```
+
+and generates
+
+```java
+result[0] = hexDigit(...);
+```
+
+---
+
+# Import Static
+
+Suppose normal Java
+
+```java
+Collections.sort(list);
+```
+
+With static import
+
+```java
+import static java.util.Collections.sort;
+```
+
+Now we can write
+
+```java
+sort(list);
+```
+
+JavaPoet supports this using
+
+```java
+.addStaticImport(Collections.class, "*")
+```
+
+Generated
+
+```java
+import static java.util.Collections.*;
+
+sort(list);
+```
+
+---
+
+# Comparison with `String.format()`
+
+Many beginners ask
+
+> Why doesn't JavaPoet simply use `%s`?
+
+Because `%s` only replaces text.
+
+It doesn't understand Java.
+
+---
+
+Suppose
+
+```java
+String.format(
+    "return %s",
+    "Hello"
+)
+```
+
+Generated
+
+```java
+return Hello;
+```
+
+Wrong.
+
+---
+
+JavaPoet
+
+```java
+.addStatement(
+    "return $S",
+    "Hello"
+)
+```
+
+Generated
+
+```java
+return "Hello";
+```
+
+Correct.
+
+---
+
+Suppose
+
+```java
+String.format(
+    "%s",
+    Date.class
+)
+```
+
+Output
+
+```
+class java.util.Date
+```
+
+JavaPoet
+
+```java
+$T
+```
+
+Generated
+
+```java
+Date
+```
+
+along with
+
+```java
+import java.util.Date;
+```
+
+---
+
+# Java `printf()` Placeholders vs JavaPoet Placeholders
+
+Many people confuse these two.
+
+## `printf()` / `String.format()`
+
+| Placeholder | Meaning      |
+| ----------- | ------------ |
+| `%s`        | String       |
+| `%d`        | Integer      |
+| `%f`        | Float/Double |
+| `%c`        | Character    |
+| `%b`        | Boolean      |
+| `%x`        | Hexadecimal  |
+
+Example
+
+```java
+System.out.printf(
+    "Age=%d",
+    22
+);
+```
+
+---
+
+## JavaPoet
+
+JavaPoet does **not** have
+
+```
+$d
+
+$f
+
+%b
+```
+
+Instead
+
+it uses
+
+```
+$L
+```
+
+for every literal.
+
+Example
+
+Integer
+
+```java
+.addStatement(
+    "int age = $L",
+    22
+)
+```
+
+Generated
+
+```java
+int age = 22;
+```
+
+Float
+
+```java
+.addStatement(
+    "float marks = $L",
+    92.5f
+)
+```
+
+Generated
+
+```java
+float marks = 92.5f;
+```
+
+Boolean
+
+```java
+.addStatement(
+    "boolean passed = $L",
+    true
+)
+```
+
+Generated
+
+```java
+boolean passed = true;
+```
+
+---
+
+# Complete Placeholder Summary
+
+| Placeholder | Full Form | Used For                                              | Automatically Does                                     | Example Input               | Generated Output                  |
+| ----------- | --------- | ----------------------------------------------------- | ------------------------------------------------------ | --------------------------- | --------------------------------- |
+| `$L`        | Literal   | Numbers, booleans, operators, expressions, raw values | Inserts the value exactly as it is                     | `22`, `3.14`, `true`, `"*"` | `22`, `3.14`, `true`, `*`         |
+| `$S`        | String    | Java String literals                                  | Adds quotation marks and escapes special characters    | `"Hello"`                   | `"Hello"`                         |
+| `$T`        | Type      | Java classes and types                                | Uses simple class names and generates required imports | `Date.class`                | `Date` + `import java.util.Date;` |
+| `$N`        | Name      | Names of generated methods, fields, parameters, etc.  | Uses the generated declaration's name                  | `MethodSpec hexDigit`       | `hexDigit`                        |
+
+---
+
+# Memory Trick
+
+```
+$L
+↓
+Literal
+↓
+Copy exactly
+
+-------------------------
+
+$S
+↓
+String
+↓
+Add quotation marks
+
+-------------------------
+
+$T
+↓
+Type
+↓
+Java Class + Automatic Imports
+
+-------------------------
+
+$N
+↓
+Name
+↓
+Use the name of another generated declaration
+```
+
+---
+
+# ⭐ Final Takeaway
+
+JavaPoet placeholders are **not just text replacements** like `%s` in `String.format()`.
+
+They understand the structure of Java source code:
+
+* Use **`$L`** when you want to insert a literal value directly.
+* Use **`$S`** when you want a Java string literal (with quotes).
+* Use **`$T`** when referring to Java types or classes, letting JavaPoet manage imports.
+* Use **`$N`** when referring to the name of another generated declaration, so references stay correct even if names change.
+
+> **A simple way to remember them:**
+>
+> * **`$L`** → **Literal** (copy as-is)
+> * **`$S`** → **String** (add quotes)
+> * **`$T`** → **Type** (class + imports)
+> * **`$N`** → **Name** (reference generated methods, fields, or parameters)
