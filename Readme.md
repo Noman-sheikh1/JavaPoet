@@ -4739,3 +4739,643 @@ it generates Java source code.
 > **"In normal Java, we write code that solves a problem. In JavaPoet, we write code that writes more Java code."**
 
 ---
+
+Yes! In fact, **this is probably the best demo you can give** because it shows the real purpose of JavaPoet instead of just generating a single `HelloWorld.java`.
+
+---
+
+# Demo Scenario: Generate Multiple Employee Classes from One Template
+
+Imagine your manager says:
+
+> "We have employees in different departments. Every department needs a Java class with the same structure."
+
+Instead of writing:
+
+```java
+public class HREmployee {
+    private String name;
+    private int id;
+}
+```
+
+```java
+public class DeveloperEmployee {
+    private String name;
+    private int id;
+}
+```
+
+```java
+public class TesterEmployee {
+    private String name;
+    private int id;
+}
+```
+
+```java
+public class ManagerEmployee {
+    private String name;
+    private int id;
+}
+```
+
+You write **one JavaPoet generator**.
+
+---
+
+# Generator Code (JavaPoet)
+
+Create a file named **EmployeeGenerator.java**
+
+```java
+package org.springcore.demo;
+
+import com.squareup.javapoet.*;
+
+import javax.lang.model.element.Modifier;
+import java.io.IOException;
+import java.nio.file.Paths;
+
+public class EmployeeGenerator {
+
+    public static void main(String[] args) throws IOException {
+
+        // Different class names
+        String[] departments = {
+                "HREmployee",
+                "DeveloperEmployee",
+                "TesterEmployee",
+                "ManagerEmployee"
+        };
+
+        // Loop through every department
+        for (String className : departments) {
+
+            // Field: private String name;
+            FieldSpec name =
+                    FieldSpec.builder(String.class, "name")
+                            .addModifiers(Modifier.PRIVATE)
+                            .build();
+
+            // Field: private int id;
+            FieldSpec id =
+                    FieldSpec.builder(int.class, "id")
+                            .addModifiers(Modifier.PRIVATE)
+                            .build();
+
+            // Method: display()
+            MethodSpec display =
+                    MethodSpec.methodBuilder("display")
+                            .addModifiers(Modifier.PUBLIC)
+                            .returns(void.class)
+                            .addStatement("$T.out.println($S + name)", System.class, "Employee : ")
+                            .addStatement("$T.out.println($S + id)", System.class, "ID : ")
+                            .build();
+
+            // Build Class
+            TypeSpec employee =
+                    TypeSpec.classBuilder(className)
+                            .addModifiers(Modifier.PUBLIC)
+                            .addField(name)
+                            .addField(id)
+                            .addMethod(display)
+                            .build();
+
+            // Generate File
+            JavaFile.builder("com.example.employee", employee)
+                    .build()
+                    .writeTo(Paths.get("generated"));
+        }
+
+        System.out.println("All Employee Classes Generated Successfully!");
+    }
+}
+```
+
+---
+
+# What happens when you run this?
+
+Only **one** Java file executes:
+
+```
+EmployeeGenerator.java
+```
+
+But JavaPoet generates **four** Java files automatically.
+
+```
+generated
+│
+└── com
+    └── example
+        └── employee
+            │
+            ├── HREmployee.java
+            ├── DeveloperEmployee.java
+            ├── TesterEmployee.java
+            └── ManagerEmployee.java
+```
+
+---
+
+# Generated File Example
+
+`HREmployee.java`
+
+```java
+package com.example.employee;
+
+public class HREmployee {
+
+    private String name;
+
+    private int id;
+
+    public void display() {
+        System.out.println("Employee : " + name);
+        System.out.println("ID : " + id);
+    }
+}
+```
+
+---
+
+`DeveloperEmployee.java`
+
+```java
+package com.example.employee;
+
+public class DeveloperEmployee {
+
+    private String name;
+
+    private int id;
+
+    public void display() {
+        System.out.println("Employee : " + name);
+        System.out.println("ID : " + id);
+    }
+}
+```
+
+Notice something?
+
+The only thing that changed is the **class name**.
+
+Everything else came from the **same template**.
+
+---
+
+# Visual Flow (Perfect for README)
+
+```
+                 EmployeeGenerator.java
+                         │
+                         │
+                  String[] departments
+                         │
+     ┌───────────────────┼───────────────────┐
+     │                   │                   │
+     ▼                   ▼                   ▼
+ HREmployee      DeveloperEmployee     TesterEmployee
+     │                   │                   │
+     └───────────────────┼───────────────────┘
+                         │
+                         ▼
+                 JavaPoet Generator
+                         │
+                         ▼
+         Generates Multiple Java Files
+```
+
+---
+
+# How to Explain This in Your Demo
+
+You can say:
+
+> "Suppose my company has multiple departments like HR, Development, Testing, and Management. Every department needs a Java class with the same fields and methods. Instead of writing each class manually, I create one JavaPoet generator. The generator loops through the department names and creates a separate Java source file for each one. This saves time, reduces repetitive coding, and ensures all generated classes have the same structure."
+
+---
+
+# A More Realistic Industry Example
+
+Companies often have database tables like:
+
+```
+Student
+Employee
+Department
+Course
+Teacher
+Library
+Subject
+Fees
+Attendance
+```
+
+A JavaPoet generator can read these table names and generate:
+
+```
+Student.java
+Employee.java
+Department.java
+Course.java
+Teacher.java
+Library.java
+Subject.java
+Fees.java
+Attendance.java
+```
+
+from the **same template**, changing only the class name and fields based on the metadata.
+
+---
+
+Yes! **This is exactly the kind of example where JavaPoet shines in the real world.** In fact, this is a much better demo than `HelloWorld` because this is what companies actually do.
+
+Let's build a realistic scenario.
+
+---
+
+# 🏦 Scenario: World Bank
+
+Suppose World Bank has branches in different cities.
+
+The database contains these tables:
+
+```text
+Delhi_Branch
+Mumbai_Branch
+Bangalore_Branch
+Chennai_Branch
+Hyderabad_Branch
+Pune_Branch
+```
+
+Every table has exactly the same structure.
+
+| customer_id | customer_name | age | gender | city | phone | email | total_amount | withdrawn | balance |
+| ----------- | ------------- | --- | ------ | ---- | ----- | ----- | ------------ | --------- | ------- |
+
+Only the **table name changes**.
+
+---
+
+## Without JavaPoet
+
+You manually create
+
+```text
+DelhiBranchDTO.java
+MumbaiBranchDTO.java
+BangaloreBranchDTO.java
+ChennaiBranchDTO.java
+HyderabadBranchDTO.java
+PuneBranchDTO.java
+```
+
+Each file contains almost identical code.
+
+Example
+
+```java
+public class DelhiBranchDTO {
+
+    private int customerId;
+    private String customerName;
+    private int age;
+    private String gender;
+    private String city;
+    private String phone;
+    private String email;
+    private double totalAmount;
+    private double withdrawn;
+    private double balance;
+
+}
+```
+
+Now imagine **200 branches worldwide**.
+
+You would write
+
+```text
+200 DTO Classes
+```
+
+manually.
+
+Very repetitive.
+
+---
+
+# With JavaPoet
+
+We create **one template**.
+
+That template reads all table names and automatically generates
+
+```text
+DelhiBranchDTO.java
+MumbaiBranchDTO.java
+BangaloreBranchDTO.java
+...
+```
+
+---
+
+# Visual Flow
+
+```text
+Database
+
+Delhi_Branch
+Mumbai_Branch
+Bangalore_Branch
+Chennai_Branch
+Hyderabad_Branch
+
+          │
+          │
+          ▼
+
+JavaPoet Generator
+
+          │
+
+One DTO Template
+
+          │
+
+Loop through every table
+
+          │
+          ▼
+
+DelhiBranchDTO.java
+
+MumbaiBranchDTO.java
+
+BangaloreBranchDTO.java
+
+ChennaiBranchDTO.java
+
+HyderabadBranchDTO.java
+```
+
+---
+
+# JavaPoet Generator
+
+```java
+package org.springcore.dto;
+
+import com.squareup.javapoet.*;
+
+import javax.lang.model.element.Modifier;
+import java.io.IOException;
+import java.nio.file.Paths;
+
+public class BankDtoGenerator {
+
+    public static void main(String[] args) throws IOException {
+
+        // Imagine these names came from the database
+        String[] tables = {
+                "DelhiBranch",
+                "MumbaiBranch",
+                "BangaloreBranch",
+                "ChennaiBranch",
+                "HyderabadBranch"
+        };
+
+        for (String table : tables) {
+
+            TypeSpec dto = createDTO(table + "DTO");
+
+            JavaFile.builder("com.worldbank.dto", dto)
+                    .build()
+                    .writeTo(Paths.get("generated"));
+        }
+
+        System.out.println("All DTOs Generated Successfully!");
+    }
+
+    private static TypeSpec createDTO(String className) {
+
+        return TypeSpec.classBuilder(className)
+                .addModifiers(Modifier.PUBLIC)
+
+                .addField(int.class, "customerId", Modifier.PRIVATE)
+                .addField(String.class, "customerName", Modifier.PRIVATE)
+                .addField(int.class, "age", Modifier.PRIVATE)
+                .addField(String.class, "gender", Modifier.PRIVATE)
+                .addField(String.class, "city", Modifier.PRIVATE)
+                .addField(String.class, "phone", Modifier.PRIVATE)
+                .addField(String.class, "email", Modifier.PRIVATE)
+                .addField(double.class, "totalAmount", Modifier.PRIVATE)
+                .addField(double.class, "withdrawn", Modifier.PRIVATE)
+                .addField(double.class, "balance", Modifier.PRIVATE)
+
+                .build();
+    }
+}
+```
+
+---
+
+# What gets generated?
+
+## DelhiBranchDTO.java
+
+```java
+package com.worldbank.dto;
+
+public class DelhiBranchDTO {
+
+    private int customerId;
+    private String customerName;
+    private int age;
+    private String gender;
+    private String city;
+    private String phone;
+    private String email;
+    private double totalAmount;
+    private double withdrawn;
+    private double balance;
+
+}
+```
+
+---
+
+## MumbaiBranchDTO.java
+
+```java
+package com.worldbank.dto;
+
+public class MumbaiBranchDTO {
+
+    private int customerId;
+    private String customerName;
+    private int age;
+    private String gender;
+    private String city;
+    private String phone;
+    private String email;
+    private double totalAmount;
+    private double withdrawn;
+    private double balance;
+
+}
+```
+
+---
+
+## BangaloreBranchDTO.java
+
+```java
+package com.worldbank.dto;
+
+public class BangaloreBranchDTO {
+
+    private int customerId;
+    private String customerName;
+    private int age;
+    private String gender;
+    private String city;
+    private String phone;
+    private String email;
+    private double totalAmount;
+    private double withdrawn;
+    private double balance;
+
+}
+```
+
+Notice that **the only thing changing is the class name**. The template is reused for every branch.
+
+---
+
+# But This Is Still Hardcoded...
+
+Exactly! And this is where **real projects** go one step further.
+
+Instead of writing:
+
+```java
+String[] tables = {
+    "DelhiBranch",
+    "MumbaiBranch",
+    "BangaloreBranch"
+};
+```
+
+a real application connects to the database.
+
+For example:
+
+```text
+Database
+
+↓
+
+Read all table names
+
+↓
+
+Read all columns of each table
+
+↓
+
+JavaPoet generates DTOs automatically
+
+↓
+
+Developer gets ready-to-use Java classes
+```
+
+So your generator doesn't know in advance whether there are 5 tables or 500 tables—it discovers them from the database metadata.
+
+---
+
+# Real Company Flow
+
+Imagine this database:
+
+```text
+Database
+│
+├── Delhi_Branch
+├── Mumbai_Branch
+├── Chennai_Branch
+├── Bangalore_Branch
+├── London_Branch
+├── Dubai_Branch
+├── Paris_Branch
+├── Tokyo_Branch
+└── NewYork_Branch
+```
+
+Your generator does this:
+
+```text
+Read Database Metadata
+
+↓
+
+For every table
+
+↓
+
+Generate DTO
+
+↓
+
+Save into
+
+src/main/java/com/worldbank/dto
+```
+
+After running once, your project automatically contains:
+
+```text
+DelhiBranchDTO.java
+MumbaiBranchDTO.java
+ChennaiBranchDTO.java
+BangaloreBranchDTO.java
+LondonBranchDTO.java
+DubaiBranchDTO.java
+ParisBranchDTO.java
+TokyoBranchDTO.java
+NewYorkBranchDTO.java
+```
+
+without writing any of those classes manually.
+
+---
+
+# How to Explain This in Your Demo
+
+You can say:
+
+> "Suppose a bank has hundreds of branch tables with the same schema but different table names. Writing a DTO for every table would be repetitive and error-prone. With JavaPoet, I write one DTO template and loop through the table names. JavaPoet generates a separate DTO class for each table automatically. In a real application, the table names and columns would come from the database metadata, allowing hundreds of DTOs to be generated in seconds."
+
+---
+
+## 💡 Even More Realistic (Recommended for Your Demo)
+
+After you've understood this version, the next step would be to make it **fully dynamic**:
+
+* Connect to a real MySQL/PostgreSQL database using JDBC.
+* Read all table names from the database metadata (`DatabaseMetaData`).
+* Read the columns and their data types for each table.
+* Map SQL types (`VARCHAR`, `INT`, `DECIMAL`, etc.) to Java types (`String`, `int`, `double`, etc.).
+* Use JavaPoet to generate DTO classes with the correct fields automatically.
+
+That demonstrates JavaPoet in a way that's very close to how code generators work in real enterprise applications.
+
+
