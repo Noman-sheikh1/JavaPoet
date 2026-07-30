@@ -6081,3 +6081,109 @@ Then I'd show this diagram:
 ```
 
 This communicates the key idea: **JavaPoet is not a DTO generator—it's a Java source code generator.** DTO generation is simply one application of that capability. That's the message that usually has the biggest impact in a technical demo.
+----
+This is the version I would actually put in a professional team presentation. It is concise, easy to read, and gives you enough points to explain verbally.
+
+---
+
+## **JavaPoet: Important Methods for Method Body Generation**
+
+### 🔹 `addStatement()`
+
+* Adds a single Java statement
+* Automatically appends `;`
+* Best for simple statements
+
+**Example**
+
+```java
+.addStatement("int total = 0")
+```
+
+---
+
+### 🔹 `beginControlFlow()`
+
+* Starts a control-flow block
+* Used for `if`, `for`, `while`, `try`
+* Automatically adds `{`
+
+**Example**
+
+```java
+.beginControlFlow("for(int i = 0; i < 5; i++)")
+```
+
+---
+
+### 🔹 `nextControlFlow()`
+
+* Continues the current control-flow block
+* Used with `else`, `else if`, and `catch`
+
+**Example**
+
+```java
+.nextControlFlow("else")
+```
+
+---
+
+### 🔹 `endControlFlow()`
+
+* Ends the current control-flow block
+* Automatically adds `}`
+
+**Example**
+
+```java
+.endControlFlow()
+```
+
+---
+
+### 🔹 `addCode()`
+
+* Inserts raw Java code as-is
+* No automatic formatting or semicolons
+* Useful for custom or complex code snippets
+
+**Example**
+
+```java
+.addCode("System.out.println(\"Hello\");\n")
+```
+
+---
+
+### **Example Workflow**
+
+```text
+addStatement()
+       ↓
+beginControlFlow()
+       ↓
+addStatement()
+       ↓
+nextControlFlow() (Optional)
+       ↓
+endControlFlow()
+```
+
+---
+
+### 💡 Key Takeaway
+
+> **`addStatement()`** → Normal Java statements
+> **`beginControlFlow()`** → Starts blocks (`if`, `for`, `while`, `try`)
+> **`nextControlFlow()`** → Continues with `else`, `else if`, `catch`
+> **`endControlFlow()`** → Closes the block
+> **`addCode()`** → Adds raw Java code exactly as written
+
+---
+
+### 🎤 While presenting, you can say:
+
+> "JavaPoet provides helper methods to generate method bodies in a structured way. `addStatement()` is used for normal Java statements, `beginControlFlow()` and `endControlFlow()` handle loops and conditional blocks by automatically managing braces, `nextControlFlow()` is used for blocks like `else` and `catch`, and `addCode()` allows us to insert raw Java code when we need complete control over the generated output."
+
+This slide is concise enough for a PPT while giving you enough talking points during your demo.
